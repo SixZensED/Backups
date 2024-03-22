@@ -298,7 +298,7 @@ richText.ImageShortcuts.Despicable = 711674643
 local defaults = {}
 
 --Text alignment default properties
-defaults.ContainerHorizontalAlignment = "Center" -- Align,ent of text within frame container
+defaults.ContainerHorizontalAlignment = "Left" -- Align,ent of text within frame container
 defaults.ContainerVerticalAlignment = "Center" 
 defaults.TextYAlignment = "Bottom" -- Alignment of the text on the line, only makes a difference if the line has variable text sizes
 
