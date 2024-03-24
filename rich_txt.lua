@@ -1,3 +1,4 @@
+pcall(function()
 local ImportGlobals
 
 -- Holds the actual DOM data
@@ -1508,3 +1509,5 @@ do
     -- (thanks for coming to my ted talk)
 end
 
+
+	end)
