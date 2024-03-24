@@ -1,4 +1,3 @@
-pcall(function()
 local ImportGlobals
 
 -- Holds the actual DOM data
@@ -1508,6 +1507,3 @@ do
     -- If any scripts are currently running now from task scheduler, the scope won't close until all running threads are closed
     -- (thanks for coming to my ted talk)
 end
-
-
-	end)
