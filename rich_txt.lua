@@ -1,6 +1,6 @@
+--v.1.1.1
 local ImportGlobals
 
--- Holds the actual DOM data
 local ObjectTree = {
     {
         1,
@@ -63,12 +63,26 @@ local ObjectTree = {
                 },
                 {
                     {
+                        3,
+                        "LocalScript",
+                        {
+                            "LocalText"
+                        }
+                    },
+                    {
                         4,
                         "Frame",
                         {
                             "Frame"
                         },
                         {
+                            {
+                                5,
+                                "ImageLabel",
+                                {
+                                    "ImageLabel"
+                                }
+                            },
                             {
                                 8,
                                 "Frame",
@@ -84,13 +98,6 @@ local ObjectTree = {
                                 }
                             },
                             {
-                                6,
-                                "Frame",
-                                {
-                                    "TextBox1"
-                                }
-                            },
-                            {
                                 7,
                                 "Frame",
                                 {
@@ -98,19 +105,12 @@ local ObjectTree = {
                                 }
                             },
                             {
-                                5,
-                                "ImageLabel",
+                                6,
+                                "Frame",
                                 {
-                                    "ImageLabel"
+                                    "TextBox1"
                                 }
                             }
-                        }
-                    },
-                    {
-                        3,
-                        "LocalScript",
-                        {
-                            "LocalText"
                         }
                     }
                 }
