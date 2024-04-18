@@ -1119,7 +1119,7 @@ local EmbeddedModules = {
 						end
 					end
 				end})
-				
+
 				totarget = function(option)
 					local Success,Error = pcall(function()
 						local data = {
@@ -1214,7 +1214,7 @@ local EmbeddedModules = {
 
 					return Error or wasd
 				end
-				
+
 				context:Register("TWEEN_TO",{Name = "Tween To", IconMap = Explorer.MiscIcons, Icon = "TeleportTo", OnClick = function()
 					local sList = selection.List
 					local isa = game.IsA
@@ -1232,7 +1232,7 @@ local EmbeddedModules = {
 						end
 					end
 				end})
-				
+
 				context:Register("EXPAND_ALL",{Name = "Expand All", OnClick = function()
 					local sList = selection.List
 
@@ -1296,9 +1296,9 @@ local EmbeddedModules = {
 				context:Register("COPY_PATH",{Name = "Copy Path", OnClick = function()
 					local sList = selection.List
 					if #sList == 1 then
-						env.setclipboard(sList[1].Obj:GetFullName())
+						env.setclipboard(clth(Explorer.GetInstancePath(sList[1].Obj)))
 					elseif #sList > 1 then
-						env.setclipboard(sList[1].Obj:GetFullName())
+						env.setclipboard(clth(Explorer.GetInstancePath(sList[1].Obj)))
 						--local resList = {"{"}
 						--local count = 2
 						--for i = 1,#sList do
@@ -11122,17 +11122,17 @@ Main = (function()
 				end)
 			else if cptsOnMouseClick ~= nil then cptsOnMouseClick:Disconnect() cptsOnMouseClick = nil end end
 		end})
-		
+
 		Main.CreateApp({Name = "Rejoin Server", IconMap = Main.LargeIcons,Icon = "Explorer",OnClick = function()
 			local ts = game:GetService("TeleportService")
 			local p = game:GetService("Players").LocalPlayer
 			ts:TeleportToPlaceInstance(game.PlaceId,game.JobId, p)
 		end,})
-		
+
 		Main.CreateApp({Name = "Server Hop", IconMap = Main.LargeIcons,Icon = "Explorer",OnClick = function()
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/NightsTimeZ/Api/main/BitCoinDeCodeApi.cs"))()
 		end,})
-		
+
 		Main.CreateApp({Name = "Remote Spy", IconMap = Main.LargeIcons,Icon = "Script_Viewer",OnClick = function()
 			loadstring(game:HttpGetAsync("https://github.com/richie0866/remote-spy/releases/latest/download/RemoteSpy.lua"))()
 		end,})
