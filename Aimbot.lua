@@ -1,4 +1,11 @@
--- // Aimbot
+--[[
+
+	Universal Aimbot Module by Exunys © CC0 1.0 Universal (2023 - 2024)
+	https://github.com/Exunys
+
+]]
+
+--// Cache
 
 local game, workspace = game, workspace
 local getrawmetatable, getmetatable, setmetatable, pcall, getgenv, next, tick = getrawmetatable, getmetatable, setmetatable, pcall, getgenv, next, tick
@@ -6,6 +13,8 @@ local Vector2new, Vector3zero, CFramenew, Color3fromRGB, Color3fromHSV, Drawingn
 local getupvalue, mousemoverel, tablefind, tableremove, stringlower, stringsub, mathclamp = debug.getupvalue, mousemoverel or (Input and Input.MouseMove), table.find, table.remove, string.lower, string.sub, math.clamp
 
 local GameMetatable = getrawmetatable and getrawmetatable(game) or {
+	-- Auxillary functions - if the executor doesn't support "getrawmetatable".
+
 	__index = function(self, Index)
 		return self[Index]
 	end,
@@ -21,12 +30,19 @@ local __newindex = GameMetatable.__newindex
 local getrenderproperty, setrenderproperty = getrenderproperty or __index, setrenderproperty or __newindex
 
 local GetService = __index(game, "GetService")
+
+--// Services
+
 local RunService = GetService(game, "RunService")
 local UserInputService = GetService(game, "UserInputService")
 local TweenService = GetService(game, "TweenService")
 local Players = GetService(game, "Players")
+
+--// Service Methods
+
 local LocalPlayer = __index(Players, "LocalPlayer")
 local Camera = __index(workspace, "CurrentCamera")
+
 local FindFirstChild, FindFirstChildOfClass = __index(game, "FindFirstChild"), __index(game, "FindFirstChildOfClass")
 local GetDescendants = __index(game, "GetDescendants")
 local WorldToViewportPoint = __index(Camera, "WorldToViewportPoint")
@@ -34,14 +50,47 @@ local GetPartsObscuringTarget = __index(Camera, "GetPartsObscuringTarget")
 local GetMouseLocation = __index(UserInputService, "GetMouseLocation")
 local GetPlayers = __index(Players, "GetPlayers")
 
+--// Variables
+
 local RequiredDistance, Typing, Running, ServiceConnections, Animation, OriginalSensitivity = 2000, false, false, {}
 local Connect, Disconnect = __index(game, "DescendantAdded").Connect
 
-getgenv().xova_aimbot = {
+--[[
+local Degrade = false
+
+do
+	xpcall(function()
+		local TemporaryDrawing = Drawingnew("Line")
+		getrenderproperty = getupvalue(getmetatable(TemporaryDrawing).__index, 4)
+		setrenderproperty = getupvalue(getmetatable(TemporaryDrawing).__newindex, 4)
+		TemporaryDrawing.Remove(TemporaryDrawing)
+	end, function()
+		Degrade, getrenderproperty, setrenderproperty = true, function(Object, Key)
+			return Object[Key]
+		end, function(Object, Key, Value)
+			Object[Key] = Value
+		end
+	end)
+
+	local TemporaryConnection = Connect(__index(game, "DescendantAdded"), function() end)
+	Disconnect = TemporaryConnection.Disconnect
+	Disconnect(TemporaryConnection)
+end
+]]
+
+--// Checking for multiple processes
+
+if ExunysDeveloperAimbot and ExunysDeveloperAimbot.Exit then
+	ExunysDeveloperAimbot:Exit()
+end
+
+--// Environment
+
+getgenv().ExunysDeveloperAimbot = {
 	DeveloperSettings = {
 		UpdateMode = "RenderStepped",
 		TeamCheckOption = "TeamColor",
-		RainbowSpeed = 1
+		RainbowSpeed = 1 -- Bigger = Slower
 	},
 
 	Settings = {
@@ -54,9 +103,11 @@ getgenv().xova_aimbot = {
 		OffsetToMoveDirection = false,
 		OffsetIncrement = 15,
 
-		Sensitivity = 0,
-		Sensitivity2 = 3.5,
-		LockPart = "Head",
+		Sensitivity = 0, -- Animation length (in seconds) before fully locking onto target
+		Sensitivity2 = 3.5, -- mousemoverel Sensitivity
+
+		LockMode = 1, -- 1 = CFrame; 2 = mousemoverel
+		LockPart = "Head", -- Body part to lock on
 
 		TriggerKey = Enum.UserInputType.MouseButton2,
 		Toggle = false
@@ -85,7 +136,7 @@ getgenv().xova_aimbot = {
 	FOVCircle = Drawingnew("Circle")
 }
 
-local Environment = getgenv().xova_aimbot
+local Environment = getgenv().ExunysDeveloperAimbot
 
 setrenderproperty(Environment.FOVCircle, "Visible", false)
 setrenderproperty(Environment.FOVCircleOutline, "Visible", false)
@@ -119,7 +170,7 @@ end
 local CancelLock = function()
 	Environment.Locked = nil
 
-	local FOVCircle = Environment.FOVCircle
+	local FOVCircle = Environment.FOVCircle--Degrade and Environment.FOVCircle or Environment.FOVCircle.__OBJECT
 
 	setrenderproperty(FOVCircle, "Color", Environment.FOVSettings.Color)
 	__newindex(UserInputService, "MouseDeltaSensitivity", OriginalSensitivity)
@@ -182,6 +233,12 @@ local Load = function()
 
 	local Settings, FOVCircle, FOVCircleOutline, FOVSettings, Offset = Environment.Settings, Environment.FOVCircle, Environment.FOVCircleOutline, Environment.FOVSettings
 
+	--[[
+	if not Degrade then
+		FOVCircle, FOVCircleOutline = FOVCircle.__OBJECT, FOVCircleOutline.__OBJECT
+	end
+	]]
+
 	ServiceConnections.RenderSteppedConnection = Connect(__index(RunService, Environment.DeveloperSettings.UpdateMode), function()
 		local OffsetToMoveDirection, LockPart = Settings.OffsetToMoveDirection, Settings.LockPart
 
@@ -216,7 +273,20 @@ local Load = function()
 			if Environment.Locked then
 				local LockedPosition_Vector3 = __index(__index(Environment.Locked, "Character")[LockPart], "Position")
 				local LockedPosition = WorldToViewportPoint(Camera, LockedPosition_Vector3 + Offset)
-				mousemoverel((LockedPosition.X - GetMouseLocation(UserInputService).X) / Settings.Sensitivity2, (LockedPosition.Y - GetMouseLocation(UserInputService).Y) / Settings.Sensitivity2)
+
+				if Environment.Settings.LockMode == 2 then
+					mousemoverel((LockedPosition.X - GetMouseLocation(UserInputService).X) / Settings.Sensitivity2, (LockedPosition.Y - GetMouseLocation(UserInputService).Y) / Settings.Sensitivity2)
+				else
+					if Settings.Sensitivity > 0 then
+						Animation = TweenService:Create(Camera, TweenInfonew(Environment.Settings.Sensitivity, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFramenew(Camera.CFrame.Position, LockedPosition_Vector3)})
+						Animation:Play()
+					else
+						__newindex(Camera, "CFrame", CFramenew(Camera.CFrame.Position, LockedPosition_Vector3 + Offset))
+					end
+
+					__newindex(UserInputService, "MouseDeltaSensitivity", 0)
+				end
+
 				setrenderproperty(FOVCircle, "Color", FOVSettings.LockedColor)
 			end
 		end
@@ -268,7 +338,9 @@ end)
 
 --// Functions
 
-function Environment.Exit(self)
+function Environment.Exit(self) -- METHOD | ExunysDeveloperAimbot:Exit(<void>)
+	assert(self, "EXUNYS_AIMBOT-V3.Exit: Missing parameter #1 \"self\" <table>.")
+
 	for Index, _ in next, ServiceConnections do
 		Disconnect(ServiceConnections[Index])
 	end
@@ -280,7 +352,7 @@ function Environment.Exit(self)
 	getgenv().ExunysDeveloperAimbot = nil
 end
 
-function Environment.Restart()
+function Environment.Restart() -- ExunysDeveloperAimbot.Restart(<void>)
 	for Index, _ in next, ServiceConnections do
 		Disconnect(ServiceConnections[Index])
 	end
@@ -288,18 +360,33 @@ function Environment.Restart()
 	Load()
 end
 
-function Environment.Blacklist(self, Username)
+function Environment.Blacklist(self, Username) -- METHOD | ExunysDeveloperAimbot:Blacklist(<string> Player Name)
+	assert(self, "EXUNYS_AIMBOT-V3.Blacklist: Missing parameter #1 \"self\" <table>.")
+	assert(Username, "EXUNYS_AIMBOT-V3.Blacklist: Missing parameter #2 \"Username\" <string>.")
+
 	Username = FixUsername(Username)
+
+	assert(self, "EXUNYS_AIMBOT-V3.Blacklist: User "..Username.." couldn't be found.")
+
 	self.Blacklisted[#self.Blacklisted + 1] = Username
 end
 
-function Environment.Whitelist(self, Username)
+function Environment.Whitelist(self, Username) -- METHOD | ExunysDeveloperAimbot:Whitelist(<string> Player Name)
+	assert(self, "EXUNYS_AIMBOT-V3.Whitelist: Missing parameter #1 \"self\" <table>.")
+	assert(Username, "EXUNYS_AIMBOT-V3.Whitelist: Missing parameter #2 \"Username\" <string>.")
+
 	Username = FixUsername(Username)
+
+	assert(Username, "EXUNYS_AIMBOT-V3.Whitelist: User "..Username.." couldn't be found.")
+
 	local Index = tablefind(self.Blacklisted, Username)
+
+	assert(Index, "EXUNYS_AIMBOT-V3.Whitelist: User "..Username.." is not blacklisted.")
+
 	tableremove(self.Blacklisted, Index)
 end
 
-function Environment.GetClosestPlayer()
+function Environment.GetClosestPlayer() -- ExunysDeveloperAimbot.GetClosestPlayer(<void>)
 	GetClosestPlayer()
 	local Value = Environment.Locked
 	CancelLock()
@@ -307,7 +394,7 @@ function Environment.GetClosestPlayer()
 	return Value
 end
 
-Environment.Load = Load
+Environment.Load = Load -- ExunysDeveloperAimbot.Load()
 
 setmetatable(Environment, {__call = Load})
 
